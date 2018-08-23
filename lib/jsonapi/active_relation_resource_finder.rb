@@ -204,13 +204,13 @@ module JSONAPI
         records = related_klass.apply_filters(records, filters, filter_options)
 
         pluck_fields = [
-            "#{primary_key_field} AS #{_table_name}_#{_primary_key}",
-            "#{concat_table_field(table_alias, related_klass._primary_key)} AS #{table_alias}_#{related_klass._primary_key}"
+            Arel.sql("#{primary_key_field} AS #{_table_name}_#{_primary_key}"),
+            Arel.sql("#{concat_table_field(table_alias, related_klass._primary_key)} AS #{table_alias}_#{related_klass._primary_key}")
         ]
 
         cache_field = related_klass.attribute_to_model_field(:_cache_field) if options[:cache]
         if cache_field
-          pluck_fields << "#{concat_table_field(table_alias, cache_field[:name])} AS #{table_alias}_#{cache_field[:name]}"
+          pluck_fields << Arel.sql("#{concat_table_field(table_alias, cache_field[:name])} AS #{table_alias}_#{cache_field[:name]}")
         end
 
         model_fields = {}
@@ -218,7 +218,7 @@ module JSONAPI
         attributes.try(:each) do |attribute|
           model_field = related_klass.attribute_to_model_field(attribute)
           model_fields[attribute] = model_field
-          pluck_fields << "#{concat_table_field(table_alias, model_field[:name])} AS #{table_alias}_#{model_field[:name]}"
+          pluck_fields << Arel.sql("#{concat_table_field(table_alias, model_field[:name])} AS #{table_alias}_#{model_field[:name]}")
         end
 
         rows = records.pluck(*pluck_fields)
@@ -265,9 +265,9 @@ module JSONAPI
         related_type = concat_table_field(_table_name, relationship.polymorphic_type)
 
         pluck_fields = [
-          "#{primary_key} AS #{_table_name}_#{_primary_key}",
-          "#{related_key} AS #{_table_name}_#{relationship.foreign_key}",
-          "#{related_type} AS #{_table_name}_#{relationship.polymorphic_type}"
+          Arel.sql("#{primary_key} AS #{_table_name}_#{_primary_key}"),
+          Arel.sql("#{related_key} AS #{_table_name}_#{relationship.foreign_key}"),
+          Arel.sql("#{related_type} AS #{_table_name}_#{relationship.polymorphic_type}")
         ]
 
         relations = relationship.polymorphic_relations
@@ -441,9 +441,9 @@ module JSONAPI
           curr_table_name = _join_table_name(current)
           relationship_primary_key = current.options.fetch(:primary_key, "id")
           if current.belongs_to?
-            joins << "LEFT JOIN #{current.table_name} AS #{curr_table_name} ON #{curr_table_name}.#{relationship_primary_key} = #{prev_table_name}.#{current.foreign_key}"
+            joins << Arel.sql("LEFT JOIN #{current.table_name} AS #{curr_table_name} ON #{curr_table_name}.#{relationship_primary_key} = #{prev_table_name}.#{current.foreign_key}")
           else
-            joins << "LEFT JOIN #{current.table_name} AS #{curr_table_name} ON #{curr_table_name}.#{current.foreign_key} = #{prev_table_name}.#{relationship_primary_key}"
+            joins << Arel.sql("LEFT JOIN #{current.table_name} AS #{curr_table_name} ON #{curr_table_name}.#{current.foreign_key} = #{prev_table_name}.#{relationship_primary_key}")
           end
 
           current
