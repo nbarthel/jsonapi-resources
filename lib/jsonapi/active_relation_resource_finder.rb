@@ -64,11 +64,11 @@ module JSONAPI
         records = find_records(filters, options)
 
         table_name = _model_class.table_name
-        pluck_fields = ["#{concat_table_field(table_name, _primary_key)} AS #{table_name}_#{_primary_key}"]
+        pluck_fields = [Arel.sql("#{concat_table_field(table_name, _primary_key)} AS #{table_name}_#{_primary_key}")]
 
         cache_field = attribute_to_model_field(:_cache_field) if options[:cache]
         if cache_field
-          pluck_fields << "#{concat_table_field(table_name, cache_field[:name])} AS #{table_name}_#{cache_field[:name]}"
+          pluck_fields << Arel.sql("#{concat_table_field(table_name, cache_field[:name])} AS #{table_name}_#{cache_field[:name]}")
         end
 
         model_fields = {}
@@ -76,7 +76,7 @@ module JSONAPI
         attributes.try(:each) do |attribute|
           model_field = attribute_to_model_field(attribute)
           model_fields[attribute] = model_field
-          pluck_fields << "#{concat_table_field(table_name, model_field[:name])} AS #{table_name}_#{model_field[:name]}"
+          pluck_fields << Arel.sql("#{concat_table_field(table_name, model_field[:name])} AS #{table_name}_#{model_field[:name]}")
         end
 
         fragments = {}
